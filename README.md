@@ -31,6 +31,16 @@ Icon made by Freepik from www.flaticon.com
 
 ------------------------------------------------------------------------------
 
+[How to Install]
+
+For Windows, download enotepad.exe. For other OS, download Encrypted_Notepad.py and compile it.
+
+
+[How to Uninstall]
+
+Delete enotepad.exe and enotepad.ini.
+
+
 [Overview]
 
 This program is a text editor with a feature to save/open a text file with Fernet encryption, intended to facilitate password management. A recommended use is:
