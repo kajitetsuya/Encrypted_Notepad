@@ -1,4 +1,5 @@
-r"""
+
+"""
 Encrypted Notepad
 
 Copyright (c) 2020 by Tetsuya Kaji
@@ -30,12 +31,50 @@ other dealings in this Software without prior written authorization.
 Icon made by Freepik from www.flaticon.com
 """
 
-r"""
-To compile, install pyinstaller and run
-    pyinstaller Encrypted_Notepad.py --onefile --noconsole --name=enotepad --icon=security.ico --add-data="security.ico;.
-On Visual Studio, you may need to add the path to the library explicitly (add the option: --paths=...\bin)
-"""
+# https://stackoverflow.com/questions/23571407/how-to-i-have-the-call-back-in-tkinter-when-i-change-the-current-insert-position
+# Problem with 'sel':
+# https://stackoverflow.com/questions/47184080/how-do-i-track-whether-a-tkinter-text-widget-has-been-modified-using-a-proxy-tha
+# Solution to 'sel':
+# https://codereview.stackexchange.com/questions/178139/simple-tkinter-gui-that-uses-a-popup-menu-class
 
+# Printing function seems to be not platform-free
+# https://stackoverflow.com/questions/12723818/print-to-standard-printer-from-python
+
+# Tuple ()
+# List []
+# Set {}
+# Dictionary
+
+# https://www.iconfinder.com/iconsets/filetype-4
+# https://www.iconfinder.com/iconsets/material-circle-apps
+# https://www.iconfinder.com/iconsets/basic-ui-1-line
+# https://www.iconfinder.com/iconsets/security-double-colour-blue-black-vol-1
+# Icons made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+# https://www.flaticon.com/free-icon/lock_2913133?term=security&page=2&position=2
+
+# https://medium.com/sanchit-gupta/executable-gui-with-python-fc79562a5558
+# https://github.com/pyinstaller/pyinstaller/issues/4047
+# https://stackoverflow.com/questions/38674400/missing-dll-files-when-using-pyinstaller/38682416
+# Create a Python environment named 'crypto_regex_pyinstaller_env' with packages cryptography, regex, and pyinstaller
+# Put security.ico in the source folder along with this file
+# Open the PowerShell and move to the source folder and execute
+# pyinstaller Encrypted_Notepad.py --onefile --noconsole --name=enotepad --paths=C:\Users\User\.conda\envs\crypto_regex_pyinstaller_env\Library\bin --icon=security.ico --add-data="security.ico;."
+# https://stackoverflow.com/questions/47840633/hide-console-window-by-an-exe-file-executed-by-a-py-script
+# https://stackoverflow.com/questions/41129537/hide-the-console-of-an-exe-file-created-with-pyinstaller
+# Want to also use the "-key" option
+# https://pyinstaller.readthedocs.io/en/stable/usage.html#options
+
+# Implement encoding
+# Remember open folder (this is already implemented... how does it work?)
+
+
+# When you maximize the window with double click on the title bar, the selection is canceled...
+# This happens because a single click is induced at the place double click took place.
+# So if you bring the normal window at the top (so that the point at which you double click will not be in the text
+# even after maximizing the window), then the selection is not canceled...
+
+# Bind delete directly to the internal listbox object
+# => Well, then we also need to add the new keyword to the list through the internal listbox, which is too much dependence on the internal object IMO.
 
 import sys
 
@@ -45,9 +84,13 @@ from tkinter import simpledialog
 from tkinter.simpledialog import Dialog
 from tkinter import messagebox
 from tkinter import font
+#from tkinter.font import families
 from tkinter import ttk
 from tkinter import colorchooser
 from tkinter.colorchooser import askcolor
+#from tkinter import commondialog
+#import tkfontchooser
+#from tkfontchooser import askfont
 
 from datetime import datetime
 
@@ -59,6 +102,8 @@ from random import *
 # To open OnScreen Keyboard on Windows
 import platform
 import subprocess
+# subprocess.Popen(['osk'], shell=True) # Windows
+# os.system('open -a KeyboardViewer') # Mac
 
 # To encrypt / decrypt the files
 import base64
@@ -73,6 +118,12 @@ from cryptography.fernet import Fernet, InvalidToken
 #  - re can do symbolic substitution but cannot do backward search
 #  - regex can do both
 # So we go with regex.
+#
+# Difference between Python re and Tcl RegEx
+# http://www.greenend.org.uk/rjk/tech/regexp.html
+
+# https://bugs.python.org/issue516762
+# https://pypi.org/project/regex/
 import regex as re # This is *different* from 'import re'
 import webbrowser # To create a hyperlink to a regex tutorial website
 
@@ -165,6 +216,9 @@ class Notepad(ttk.Frame):
         self.menu = tk.Menu(self)
         self.master.config(menu=self.menu)
 
+        # Implement status bar as a Frame with three gridded Labels
+        # http://zetcode.com/tkinter/layout/
+
         self.status = ttk.Frame(self)
         self.status.misc = tk.Label(self.status, bd=1, relief='sunken', text='', anchor='w')
         self.status.misc.grid(row=1, column=0, sticky='sew')
@@ -172,11 +226,15 @@ class Notepad(ttk.Frame):
         self.status.cursor.grid(row=1, column=1, sticky='sew')
         self.status.count = tk.Label(self.status, bd=1, relief='sunken', text='', anchor='w')
         self.status.count.grid(row=1, column=2, sticky='sew')
+        #self.status.encoding = tk.Label(self.status, bd=1, relief='sunken', text='', anchor='w')
+        #self.status.encoding.grid(row=1, column=3, sticky='sew')
 
         # Evenly space status bars
+        # https://webcache.googleusercontent.com/search?q=cache:3h0isl3ZrqEJ:https://www.e-learn.cn/topic/3015315+&cd=4&hl=en&ct=clnk&gl=us&client=firefox-b-1-d
         self.status.grid_columnconfigure(0, weight=1, uniform='a')
         self.status.grid_columnconfigure(1, weight=1, uniform='a')
         self.status.grid_columnconfigure(2, weight=1, uniform='a')
+        #self.status.grid_columnconfigure(3, weight=1, uniform='a')
 
         self.hscroll.show = lambda: self.hscroll.grid(row=1, column=0, sticky='ew')
         self.hscroll.hide = lambda: self.hscroll.grid_forget()
@@ -194,6 +252,9 @@ class Notepad(ttk.Frame):
         self.text.configure(yscrollcommand=self.vscroll.set)
         self.text.configure(xscrollcommand=self.hscroll.set)
 
+        #self.text.bind('<<CursorChange>>', self._on_change)
+        #self.text.bind('<<Selection>>', self._on_change)
+
         # Beware that these hacks do not support direct text/cursor modifications by executing insert(), tag_add('sel'), etc.
         self.text.bind('<KeyRelease>', self._on_change)
         self.text.bind('<ButtonRelease-1>', self._on_change)
@@ -206,6 +267,7 @@ class Notepad(ttk.Frame):
         self.key2 = None        # read-only key for text encryption
         self.salt = salt        # sald for encryption
         self.iter = iterations  # iterations for encryption
+        #self.text.tag_configure('match', foreground='white', background='royal blue')
         self.text.tag_configure('match', foreground=self.text.tag_cget('sel', 'foreground'), background=self.text.tag_cget('sel', 'background'))
         self.text.tag_configure('find all', background='orange red')
         self.text.tag_raise('sel')
@@ -263,6 +325,11 @@ class Notepad(ttk.Frame):
         self.menu_file.add_separator()
         self.menu_recent = tk.Menu(self.menu_file, tearoff=0)
         self.menu_file.add_cascade(label='Recent Files', menu=self.menu_recent, underline=0)
+        # https://stackoverflow.com/questions/529424/traverse-a-list-in-reverse-order-in-python
+        # https://stackoverflow.com/questions/21963373/tkinter-how-to-open-recent-files
+        # https://stackoverflow.com/questions/728356/dynamically-creating-a-menu-in-tkinter-lambda-expressions
+        # https://stackoverflow.com/questions/4020419/why-arent-python-nested-functions-called-closures
+        # https://stackoverflow.com/questions/55316791/how-can-i-add-a-tooltip-to-menu-item/55343447#55343447
         for fp in self.recent_files:
             self.menu_recent.add_command(label=fp, command=lambda f=fp: self._on_open_file(fpath=f))
         self.menu_recent.add_separator()
@@ -275,6 +342,8 @@ class Notepad(ttk.Frame):
         self.menu_edit.add_command(label='Undo', underline=0, command=self._on_undo, accelerator='Ctrl+Z')
         self.menu_edit.add_command(label='Redo', underline=0, command=self._on_redo, accelerator='Ctrl+Y')
         self.menu_edit.add_separator()
+        #self.menu_edit.add_checkbutton(label='Rectangle Select/Insert', onvalue=1, offvalue=0, variable=self.rect_select_on, command=self._on_rect_select)
+        #self.menu_edit.add_separator()
         self.menu_edit.add_command(label='Cut', underline=2, command=self._on_cut, accelerator='Ctrl+X')
         self.menu_edit.add_command(label='Copy', underline=0, command=self._on_copy, accelerator='Ctrl+C')
         self.menu_edit.add_command(label='Paste', underline=0, command=self._on_paste, accelerator='Ctrl+V')
@@ -305,11 +374,16 @@ class Notepad(ttk.Frame):
         self.menu_view = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='View', underline=0, menu=self.menu_view)
         self.menu_view.add_checkbutton(label='Status Bar', underline=0, onvalue=1, offvalue=0, variable=self.status_on, command=self._on_statusbar)
+        #self.menu_view.add_command(label='Theme', underline=0, command=self._on_theme)
         self.menu_view.add_command(label='Minimize', underline=0, command=lambda: self.text.event_generate('<Escape>'), accelerator='Esc')
 
         self.menu_help = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='Help', underline=0, menu=self.menu_help)
         self.menu_help.add_command(label='About...', underline=0, command=self._on_about)
+
+        # https://stackoverflow.com/questions/46194948/what-are-the-tkinter-events-for-horizontal-edge-scrolling-in-linux/46194949#46194949
+        # https://stackoverflow.com/questions/48505483/how-to-trackpad-swipe-left-right-for-horizontal-scrollbar-in-tkinter?rq=1
+        #self.text.bind('<Button>', self._on_touchpad_sidescroll)
 
         self._on_statusbar()
         self._on_word_wrap()
@@ -364,6 +438,16 @@ class Notepad(ttk.Frame):
             self.menu_recent.delete(index-1)
             self.recent_files.pop(index-1)
         self.cp.set('settings', 'recent_files', str(self.recent_files))
+        # Update Recent Files menu
+        # https://stackoverflow.com/questions/21963373/tkinter-how-to-open-recent-files
+        # https://stackoverflow.com/questions/728356/dynamically-creating-a-menu-in-tkinter-lambda-expressions
+        # Use the insert_command instead
+        # https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/menu.html
+        #self.menu_recent.delete(0, 'end')
+        #for fp in reversed(self.recent_files):
+        #    self.menu_recent.add_command(label=fp, command=lambda f=fp: self._on_open_file(fpath=f))
+        #self.menu_recent.add_separator()
+        #self.menu_recent.add_command(label='Clear Recent Files', underline=0, command=self._on_clear_recent_files)
 
     def _on_clear_recent_files(self):
         index = len(self.recent_files)
@@ -421,6 +505,12 @@ class Notepad(ttk.Frame):
         else:
             file.close()
         try:
+            # If text can be decoded by URL-safe Base64 decoding, the file is likely to be encrypted => Ask password
+            # URL-safe Base64 encoding characters in regexp: '[a-zA-Z0-9_=-]'
+            # https://stackoverflow.com/questions/12315398/check-if-a-string-is-encoded-in-base64-using-python
+            # https://stackoverflow.com/questions/8571501/how-to-check-whether-a-string-is-base64-encoded-or-not/8571649#8571649
+            # base64.urlsafe_b64decode(text, validate=True) # validate option does not work for urlsafe version...
+
             # If the length of the text is not a multiple of 4, then not encoded
             if len(text) % 4 != 0:
                 raise
@@ -664,8 +754,14 @@ class Notepad(ttk.Frame):
         self.text.event_generate('<<SelectAll>>')
         self.text.event_generate('<ButtonRelease-1>')
 
+    #def _on_rect_select(self, event=None):
+    #    pass
+
     def _on_find_replace(self, event=None):
         self.fr.deiconify()
+        self.fr.entry_find.icursor('end') # Set the cursor to the end
+        #self.fr.entry_find.focus_set()
+        self.fr.entry_find.selection_range(0, 'end') # Select all. This automatically sets focus
 
     def _on_find_next(self, event=None):
         self.fr.find_next()
@@ -757,10 +853,42 @@ class Notepad(ttk.Frame):
             self.status.hide()
         self.cp.set('settings', 'status_bar', str(self.status_on.get()))
 
+    #def _on_password_strength(self, event=None, pwd=''):
+    #    # Compute the maximized empirical likelihood of the string. A
+    #    # Compute the likelihood of uniform random string of the same length. B
+    #    # Also, use the heuristics that the likelihood must be smaller than some value
+    #    # in which an attacker would take 100 years to crack if they continued uniform attack
+    #    # on the password of some length with 10,000,000,000 times / sec.
+    #    # If A >> C, then weak, A > C, then fair, A ~ C, then strong.
+    #    # If A >> B ~ C, then the password complication is the problem.
+    #    # If A ~ B >> C, then the password length is the problem.
+    #    # Or, get the number of length whose uniform string would give the same likelihood as A,
+    #    # then compute the time it takes to crack that uniform password (10 bil attackes/sec), and use the 'years'
+    #    # as the measure of the password.
+    #    #
+    #    # A is difficult to calculate since A does not span the entire support of the admissible characters.
+    #    # So, instead, let the uniform distribution be the prior. Then update according to A.
+    #    # Then compute the likelihood of the posterior.
+    #    #
+    #    # Show the password strength in the first status bar when Random Password is invoked.
+    #    # Also, allow the user to check their own passwords in this option.
+    #    #
+    #    # https://en.wikipedia.org/wiki/Password_strength#Rethinking_password_change_guidelines
+    #    pass
+
     def _on_about(self, event=None):
         AboutDialog(self)
         self.text.focus_set()
         #tk.messagebox.showinfo(title='About Encrypted Notepad', message='This is Encrypted Notepad.')
+
+    #def _on_touchpad_sidescroll(self, event):
+    #    print(event.num)
+    #    if event.num == 6:
+    #        self.text.xview_scroll(-10, 'units')
+    #        return 'break'
+    #    elif event.num == 7:
+    #        self.text.xview_scroll(10, 'units')
+    #        return 'break'
 
 
     # The default font of Tkinter.Text is a named font 'TkFixedFont', which consists of the following attributes
@@ -770,6 +898,8 @@ class Notepad(ttk.Frame):
     #  -slant = 'roman'
     #  -underline = 0
     #  -overstrike = 0
+    # Be carefule here that 'TkFixedFont' is not just the name of the font, but the name of the overall font and style.
+    # The name of the font itself here is 'Courier New'.
     # Class Arguments:
     #   fontobj : an instance of the tkinter.Font class (this is NOT the name of a named font)
     #   fgcolorhex : the hex string of a foreground (text) color
@@ -803,6 +933,8 @@ class Notepad(ttk.Frame):
             ## Font Pane
             ttk.Label(self.frame, text='Font:', anchor='w').grid(row=0, column=0, sticky='w')
 
+            # http://effbot.org/zone/tkinter-scrollbar-patterns.htm#patterns
+            #listframe = tk.Frame(self.frame, bd=2, relief='sunken')
             listframe = ttk.Frame(self.frame, borderwidth=2, relief='sunken')
             self.lb_family = tk.Listbox(listframe, listvariable=self.font_list_var, exportselection=False, bd=0, width=len(max(self.font_list, key=len)))
             sb_family = ttk.Scrollbar(listframe, orient='vertical')
@@ -814,14 +946,20 @@ class Notepad(ttk.Frame):
             self.lb_family.selection_set(x)
             self.lb_family.see(x)
             self.lb_family.activate(x)
+            # https://stackoverflow.com/questions/49695346/tkinter-listboxs-selection-set-and-activate-temporarily-disable-extended-se
             self.lb_family.selection_anchor(x)
+            ## TODO: When the list is at the bottom, don't scroll
+            #self.lb_family.yview_scroll(-4, 'units')
             self.lb_family.bind('<<ListboxSelect>>', self.set_family)
+            #self.lb.activate(self.fontnames.index(self.font.cget('family')))
             listframe.grid(row=1, column=0, rowspan=7, sticky='w')
 
 
             ## Size Pane
             ttk.Label(self.frame, text='Size:', anchor='w').grid(row=0, column=1, sticky='w', padx=20)
             sizeframe = ttk.Frame(self.frame, borderwidth=2, relief='sunken')
+            #self.en_size = ttk.Entry(sizeframe, width=5, textvariable=self.size, validate='key')
+            #sizeframe = tk.Frame(self.frame, bd=2, relief='sunken')
             self.en_size = tk.Entry(sizeframe, width=5, bd=0, relief='groove', textvariable=self.size, validate='key')
             self.en_size.configure(validatecommand=(self.en_size.register(self.validate_size), '%P', '%d')) # Only digits are allowed
             self.en_size.pack(side='top', fill='x')
@@ -856,12 +994,27 @@ class Notepad(ttk.Frame):
             self.bclabel = ttk.Label(self.frame, background=self.bghex, relief='sunken', font=smallfont, width=4)
             self.bclabel.grid(row=7, column=3, sticky='w', pady=2)
             self.bclabel.bind('<Button-1>', self.set_bg_color)
+            #tk.Button(self.frame, background='black', relief='sunken', font=font.Font(size=6), width=4, command=self.set_bg_color).grid(row=6, column=3, sticky='w', pady=2)
+            #tk.Button(self.frame, background='white', relief='sunken', font=font.Font(size=6), width=4, command=self.set_bg_color).grid(row=7, column=3, sticky='w', pady=2)
+
+
+            # Sample Text Pane
+            #ttk.Label(self.frame, text='Sample Text:', anchor='w').grid(row=8, column=0, columnspan=4, sticky='w')
+            #self.text = tk.Text(self.frame, height=3, width=20, relief='sunken', font=self.font)
+            #self.text.grid(row=9, column=0, columnspan=4, sticky='nsew')
+            #self.text.insert('1.0', 'Sample text.')
 
             self.frame.pack()
+
             self.iconbitmap(resource_path('security.ico'))
+
+            #self.lb_family.bind('<Double-Button-1>', self.apply)
             self.set_size()
 
         def apply(self, event=None):
+            #print('hex = %s' % self.bghex)
+            #print('rgb = (%d,%d,%d)' % hex_to_rgb(self.bghex))
+            #print('brightness = %f' % hex_to_brightness(self.bghex))
             self.result = hex_to_brightness(self.bghex)
 
         def set_family(self, event=None):
@@ -968,8 +1121,12 @@ class Notepad(ttk.Frame):
             f.configure(underline=1)
             style.configure('Underline.Label', foreground='blue', font=f)
             self.link_regexp = ttk.Label(self.frame_entry, text='(Python regex)', style='Underline.Label')
+            #self.link_regexp = tk.Label(self.frame_entry, text='(Python regex)', fg="blue", anchor='w')
             self.link_regexp.grid(row=7, column=1, sticky='w')
             self.link_regexp.bind('<Button-1>', lambda event: webbrowser.open_new('https://pypi.org/project/regex/'))
+            #f = font.Font(self.link_regexp, self.link_regexp.cget('font'))
+            #f.configure(underline=True)
+            #self.link_regexp.configure(font=f)
 
             ttk.Button(self.frame_buttons, text='Find Next', command=self.find_next).pack(fill='x', pady=2)
             ttk.Button(self.frame_buttons, text='Find Previous', command=self.find_previous).pack(fill='x', pady=2)
@@ -1002,6 +1159,8 @@ class Notepad(ttk.Frame):
             self.iconbitmap(resource_path('security.ico'))
             self.wm_geometry("450x270")
             self.entry_find.focus_set()
+
+            # Make the entry boxes a Combobox and store search/replace history
 
         # Get the minimum tag among 'insert', 'sel.first', and 'sel.last'
         # It assumes that 'insert' is equal to one of 'sel.first' and 'sel.last', if at all
@@ -1041,6 +1200,7 @@ class Notepad(ttk.Frame):
 
             if not self.regexp.get():
                 str = re.escape(str)
+            # https://stackoverflow.com/questions/4154961/find-substring-in-string-but-only-if-whole-words
             # Known issue:
             # If the text is 'wordword' and the cursor is like 'word|word' and you search for the whole word of 'word',
             # the current algorithm catches the second (find next) or the first (find previous).
@@ -1048,14 +1208,19 @@ class Notepad(ttk.Frame):
                 str = r'\b' + str + r'\b'
             if backwards:
                 str = '(?r)' + str
+            # https://stackoverflow.com/questions/500864/case-insensitive-regular-expression-without-re-compile
             return str
 
         def delete_find(self, event=None):
+            # https://stackoverflow.com/questions/53848622/how-to-bind-keypress-event-for-combobox-drop-out-menu-in-tkinter-python-3-7
+            # https://stackoverflow.com/questions/41666562/hide-and-show-ttk-combobox-dropdown-list
+            #str = self.entry_find.current() # This returns index of current entry box... not the item in the list
             index = self.entry_find.tk.call(self.entry_find_internal_listbox_name, 'curselection')
             if index:
                 self.strfind_list.pop(index[0])
                 self.entry_find.event_generate('<Escape>')
                 self.entry_find.config(values=self.strfind_list)
+                # https://stackoverflow.com/questions/59119896/tkinter-ttk-combobox-dropdown-expand-and-focus-on-text
                 self.entry_find.after(1, lambda: self.entry_find.event_generate('<Button-1>'))
 
         def delete_repl(self, event=None):
@@ -1069,6 +1234,7 @@ class Notepad(ttk.Frame):
         def _find_within(self, str, left, right):
             left = self.master.text.index(left) # If left is specified as 'sel.first', we need to convert it to 'l.c' form.
             try:
+                # https://stackoverflow.com/questions/452104/is-it-worth-using-pythons-re-compile
                 if self.ignorecase.get():
                     match = re.search(str, self.master.text.get(left, right), re.MULTILINE|re.IGNORECASE)
                 else:
@@ -1096,6 +1262,7 @@ class Notepad(ttk.Frame):
                 self.master.text.mark_set('insert', end_index)
                 self.master._on_change()
                 self.master.text.see('insert')
+                # How do I bring the text scroll to the selection?
                 return True
             else:
                 return False
@@ -1116,6 +1283,17 @@ class Notepad(ttk.Frame):
             else:
                 left = self._max_index()
                 right = 'end-1c'
+
+            # Treatment of 'whole word' is troublesome
+            # '\n-word' is missed when search for '(?<=[.\n])\bword'...
+            #str2 = str
+            #if self.wholeword.get() and self.master.text.compare('1.0', '<', left):
+            #    a = self.master.text.get(left+'-1c')
+            #    b = self.master.text.get(left)
+            #    if not re.fullmatch(re.escape(a)+r'\b'+re.escape(b), a+b):
+            #        str2 = r'(?<=[.\n])' + str # found match should not begin at the position 'left'
+            #if not self._find_within(str2, left, right) and not self.withinsel.get():
+            #    self._find_within(str, '1.0', 'end-1c')
 
             res = self._find_within(str, left, right)
             if res is None:
@@ -1141,6 +1319,15 @@ class Notepad(ttk.Frame):
             else:
                 left = '1.0'
                 right = self._min_index()
+
+            #str2 = str
+            #if self.wholeword.get():
+            #    a = self.master.text.get(right+'-1c')
+            #    b = self.master.text.get(right)
+            #    if not re.fullmatch(re.escape(a)+r'\b'+re.escape(b), a+b):
+            #        str2 = str + r'(?=[.\n])' # found match should not end at the position 'right'
+            #if not self._find_within(str2, left, right) and not self.withinsel.get():
+            #    self._find_within(str, '1.0', 'end-1c')
 
             res = self._find_within(str, left, right)
             if res is None:
@@ -1173,6 +1360,8 @@ class Notepad(ttk.Frame):
                 end = 'end-1c'
                 left = '1.0'
 
+            # https://stackoverflow.com/questions/250271/python-regex-how-to-get-positions-and-values-of-matches
+            # https://stackoverflow.com/questions/4664850/how-to-find-all-occurrences-of-a-substring
             count = 0
             for match in p.finditer(self.master.text.get(start, end)):
                 self.master.text.tag_add('find all', left + '+%dc' % match.start(), left + '+%dc' % match.end())
@@ -1206,6 +1395,23 @@ class Notepad(ttk.Frame):
 
             # If selection matches the pattern, replace
             if self.master.text.tag_ranges('sel') and p.fullmatch(self.master.text.get('sel.first', 'sel.last')):
+                # Treat the whole word...
+                #if self.wholeword.get():
+                #    if self.master.text.compare('sel.first', '<', 'sel.last'):
+                #        left = 'sel.first'
+                #        right = 'sel.last'
+                #    else:
+                #        left = 'sel.last'
+                #        right = 'sel.first'
+                #    if self.master.text.compare('1.0', '<', left):
+                #        a = self.master.text.get(left+'-1c')
+                #        b = self.master.text.get(left)
+                #        if not re.fullmatch(re.escape(a)+r'\b'+re.escape(b), a+b):
+                #            return
+                #    a = self.master.text.get(right+'-1c')
+                #    b = self.master.text.get(right)
+                #    if not re.fullmatch(re.escape(a)+r'\b'+re.escape(b), a+b):
+                #        return
                 rpl = p.sub(str2, self.master.text.get('sel.first', 'sel.last'))
                 self.master.text.replace('sel.first', 'sel.last', rpl)
                 self.master.text.edit_separator()
@@ -1264,6 +1470,8 @@ class Notepad(ttk.Frame):
             self.withdraw()
 
 
+#pwd = tk.simpledialog.askstring(title='Password', prompt='Enter the password for ' + fname, show='*')
+
 class EnterPasswordDialog(Dialog):
     def __init__(self, parent, fname):
         self.pwd = tk.StringVar()
@@ -1318,7 +1526,8 @@ class CreatePasswordDialog(Dialog):
 
     def body(self, parent):
         smallfont = font.Font(size=7)
-        self.frame = tk.Frame(self, padx=15, pady=7)
+        self.frame = tk.Frame(self, padx=15, pady=7) # ttk.Frame does not allow padx, pady
+        #ttk.Label(self.frame, text='Create a password for ' + self.parent.fname, anchor='w').grid(row=0, column=0, columnspan=2, sticky='w')
         ttk.Label(self.frame, text='Master Password:', anchor='w').grid(row=1, column=0, columnspan=2, sticky='w')
         self.entry_pwd = ttk.Entry(self.frame, textvariable=self.pwd, show='*')
         self.entry_pwd.grid(row=2, column=0, sticky='w', pady=(0,10))
@@ -1391,7 +1600,7 @@ class AboutDialog(Dialog):
         tframe.grid_columnconfigure(0, weight=1)
         vscroll.config(command=text.yview)
         text.configure(yscrollcommand=vscroll.set)
-        text.insert('1.0', r'''
+        text.insert('1.0', '''
 Encrypted Notepad
 
 Copyright (c) 2020 by Tetsuya Kaji
@@ -1482,7 +1691,7 @@ This program is a text editor with a feature to save/open a text file with Ferne
 
  - 'Whole Word' functionality is implemented through the regular expression.
 
- - A known glitch with 'Whole Word' is that, if there is a line with 'wordword' and the cursor is in the middle (word|word), Find Next and Find Previous on 'word' will catch each side of word, since the cursor itself is regarded as the boundary of a word.
+ - The cursor itself is regarded as the boundary of a word in the 'Whole Word' option. So if there is a line with 'wordword' and the cursor is in the middle (word|word), Find Next and Find Previous on 'word' will catch each side of the word.
 
  - Recent keywords are stored up to 5. You can delete them by pressing Delete while the keyword is selected in the dropdown list.
         ''')
@@ -1490,6 +1699,7 @@ This program is a text editor with a feature to save/open a text file with Ferne
         self.iconbitmap(resource_path('security.ico'))
         frame.pack(side='top', fill='both', expand=True)
 
+    # https://stackoverflow.com/questions/54709318/removing-parts-of-method-of-superclass
     def buttonbox(self):
         """Overrides Dialog.buttonbox() to suppress the Cancel button. """
         box = ttk.Frame(self)
@@ -1498,6 +1708,13 @@ This program is a text editor with a feature to save/open a text file with Ferne
         box.pack()
 
 
+
+
+## https://stackoverflow.com/questions/4038070/python-tkinter-window-events-and-properties
+#def update_geometry_tracker(event):
+#    print(event.type)
+#    if event.type in (2, 18): # window maximized or minimized
+#        note.geometry_tracker = root.geometry()
 
 
 # https://stackoverflow.com/questions/51060894/adding-a-data-file-in-pyinstaller-using-the-onefile-option
@@ -1515,14 +1732,19 @@ if __name__ == '__main__':
     cwd = os.getcwd()
     root = tk.Tk()
     cp = ConfigParser2()
+    # https://stackoverflow.com/questions/11274040/os-getcwd-vs-os-path-abspathos-path-dirname-file
     cp.read(os.path.join(cwd, 'enotepad.ini'))
     root.iconbitmap(resource_path('security.ico'))
+    #root.iconbitmap(os.path.join(cwd, 'security.ico'))
+    #cp.read(r'C:\Users\User\Desktop\enotepad.ini')
 
     root.geometry(cp.get2('settings', 'window', '400x300'))
     root.state('zoomed' if cp.getboolean2('settings', 'fullscreen', False) else 'normal')
 
+    #note = Notepad(root, cp=cp, salt=os.urandom(30), iterations=100000) # Different compiled binaries become not compatible in en/decryption
     note = Notepad(root, cp=cp, salt=b'}\xc9\xf7\x10m\xc4g\xdb\xa7UL\xa8X\x98\x0f\xe6\xedv65\x9eRm\x00)\x1e\xeb\x08\xc9\x1f', iterations=100001)
     root.bind('<Escape>', lambda event: root.wm_state('iconic'))
+    #root.bind('<Configure>', update_geometry_tracker)
     root.protocol('WM_DELETE_WINDOW', note._on_exit)
     note.pack(fill='both', expand=True);
     note.text.focus_set()
