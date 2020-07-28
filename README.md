@@ -99,6 +99,6 @@ This program is a text editor with a feature to save/open a text file with Ferne
 
  - 'Whole Word' functionality is implemented through the regular expression.
 
- - A known glitch with 'Whole Word' is that, if there is a line with 'wordword' and the cursor is in the middle (word|word), Find Next and Find Previous on 'word' will catch each side of word, since the cursor itself is regarded as the boundary of a word.
+ - The cursor itself is regarded as the boundary of a word in the 'Whole Word' option. So if there is a line with 'wordword' and the cursor is in the middle (word|word), Find Next and Find Previous on 'word' will catch each side of the word.
 
  - Recent keywords are stored up to 5. You can delete them by pressing Delete while the keyword is selected in the dropdown list.
